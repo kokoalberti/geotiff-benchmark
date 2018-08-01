@@ -1,0 +1,7 @@
+*.pyc
+input_rasters/*
+test_rasters/*
+*.csv
+*.ods
+*.ods#
+minimal.ini
