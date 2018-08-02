@@ -28,9 +28,10 @@ RUN apt-get update -y && apt-get install -y \
     libproj-dev \
     wget \
     bash-completion \
-    cmake 
-
-RUN apt-get install -y linux-tools-common linux-tools-generic linux-tools-$(uname -r)
+    cmake \
+    linux-tools-common \
+    linux-tools-generic \
+    linux-tools-$(uname -r)
 
 # Compile and install libzstd
 RUN cd src && tar -xvf zstd-${ZSTD_VERSION}.tar.gz && cd zstd-${ZSTD_VERSION}/ \
@@ -101,3 +102,10 @@ RUN cd src && tar -xvf gdal-${GDAL_VERSION}.tar.gz && cd gdal-${GDAL_VERSION} \
 
 # Output version and capabilities by default.
 CMD gdalinfo --version && gdalinfo --formats && ogrinfo --formats
+
+# Set up the benchmark script
+ENV GTIFF_BENCHMARK_VERSION master
+
+ADD https://github.com/kokoalberti/geotiff-benchmark/archive/${GTIFF_BENCHMARK_VERSION}.tar.gz $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz
+
+RUN tar -xvf geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz
