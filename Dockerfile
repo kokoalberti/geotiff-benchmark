@@ -14,9 +14,6 @@ ENV ZSTD_VERSION 1.3.5
 # Load assets
 WORKDIR $ROOTDIR/
 
-ADD http://download.osgeo.org/gdal/${GDAL_VERSION}/gdal-${GDAL_VERSION}.tar.gz $ROOTDIR/src/
-ADD https://github.com/facebook/zstd/archive/v${ZSTD_VERSION}.tar.gz $ROOTDIR/src/zstd-${ZSTD_VERSION}.tar.gz
-
 # Install basic dependencies
 RUN apt-get update -y && apt-get install -y \
     software-properties-common \
@@ -33,15 +30,24 @@ RUN apt-get update -y && apt-get install -y \
     linux-tools-generic \
     linux-tools-$(uname -r)
 
-# Compile and install libzstd
-RUN cd src && tar -xvf zstd-${ZSTD_VERSION}.tar.gz && cd zstd-${ZSTD_VERSION}/ \
+# Create root src directory
+RUN mkdir -p $ROOTDIR/src
+
+# Download, compile and install libzstd
+RUN wget -q -O $ROOTDIR/src/zstd-${ZSTD_VERSION}.tar.gz https://github.com/facebook/zstd/archive/v${ZSTD_VERSION}.tar.gz \
+    && cd src \
+    && tar -xvf zstd-${ZSTD_VERSION}.tar.gz \
+    && cd zstd-${ZSTD_VERSION}/ \
     && make PREFIX=$ROOTDIR ZSTD_LEGACY_SUPPORT=0 \
     && make install PREFIX=$ROOTDIR ZSTD_LEGACY_SUPPORT=0 \
     && make clean \
     && cd $ROOTDIR && rm -Rf src/zstd*
 
-# Compile and install minimal GDAL
-RUN cd src && tar -xvf gdal-${GDAL_VERSION}.tar.gz && cd gdal-${GDAL_VERSION} \
+# Download, compile and install minimal GDAL
+RUN wget -q -O $ROOTDIR/src/gdal-${GDAL_VERSION}.tar.gz http://download.osgeo.org/gdal/${GDAL_VERSION}/gdal-${GDAL_VERSION}.tar.gz \
+    && cd src \
+    && tar -xvf gdal-${GDAL_VERSION}.tar.gz \
+    && cd gdal-${GDAL_VERSION} \
     && ./configure \
       --with-python \
       --with-zstd=$ROOTDIR \
@@ -94,22 +100,16 @@ RUN cd src && tar -xvf gdal-${GDAL_VERSION}.tar.gz && cd gdal-${GDAL_VERSION} \
       --without-xml2 \
     && make && make install && ldconfig \
     && apt-get update -y \
-    && apt-get remove -y --purge build-essential wget \
     && cd $ROOTDIR && cd src/gdal-${GDAL_VERSION}/swig/python \
     && python3 setup.py build \
     && python3 setup.py install \
     && cd $ROOTDIR && rm -Rf src/gdal*
 
-# Output version and capabilities by default.
-CMD gdalinfo --version && gdalinfo --formats && ogrinfo --formats
-
-# Set up the benchmark script
+# Set up the benchmark script and sample files
 ENV GTIFF_BENCHMARK_VERSION master
 
-ADD https://github.com/kokoalberti/geotiff-benchmark/archive/${GTIFF_BENCHMARK_VERSION}.tar.gz $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz
+RUN wget -q -O $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz https://github.com/kokoalberti/geotiff-benchmark/archive/${GTIFF_BENCHMARK_VERSION}.tar.gz \
+  && tar -xvf geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz 
 
-RUN tar -xvf geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz 
-
-ADD https://s3.us-east-2.amazonaws.com/geotiff-benchmark-sample-files/geotiff_sample_files.tar.gz $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz
-
-RUN tar -xvf $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz
+RUN wget -q -O $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz https://s3.us-east-2.amazonaws.com/geotiff-benchmark-sample-files/geotiff_sample_files.tar.gz \
+  && tar -xvf $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz
