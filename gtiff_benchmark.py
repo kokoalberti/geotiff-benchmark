@@ -157,11 +157,14 @@ def run():
                 try: os.remove(created_file)
                 except: pass
                 print("Failed to run benchmark: {}".format(e))
+                print("Deleted file: {}".format(created_file))
                 task_clock = ''
                 file_size = ''
             
             # Append the result to the results list
-            results.append('{};{};{};{};{}'.format('write', name, section, task_clock, file_size))
+            result = '{};{};{};{};{}'.format('write', name, section, task_clock, file_size)
+            print("Appending result: {}".format(result))
+            results.append(result)
 
             #Run the read benchmark
             cmd = "/usr/bin/python3 {} benchmark --file {} --test {} --option {} --config {}".format(os.path.abspath(__file__), name, 'read', section, args.config)
@@ -174,7 +177,9 @@ def run():
                 task_clock = ''
 
             # Append the result to the results list
-            results.append('{};{};{};{};{}'.format('read', name, section, task_clock, ''))
+            result = '{};{};{};{};{}'.format('read', name, section, task_clock, '')
+            print("Appending result: {}".format(result))
+            results.append(result)
 
             
     # Write the results to the results file and to stdout
