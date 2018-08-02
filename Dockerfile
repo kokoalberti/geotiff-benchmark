@@ -23,6 +23,7 @@ RUN apt-get update -y && apt-get install -y \
     python3-numpy \
     libcurl4-gnutls-dev \
     libproj-dev \
+    liblzma-dev \
     wget \
     bash-completion \
     cmake \
@@ -56,6 +57,7 @@ RUN wget -q -O $ROOTDIR/src/gdal-${GDAL_VERSION}.tar.gz http://download.osgeo.or
       --with-geotiff=internal \
       --with-libtiff=internal \
       --with-libz=internal \
+      --with-liblzma=yes \
       --without-curl \
       --without-spatialite \
       --without-pg \
@@ -110,7 +112,7 @@ ENV GTIFF_BENCHMARK_VERSION master
 
 RUN wget -q -O $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz https://github.com/kokoalberti/geotiff-benchmark/archive/${GTIFF_BENCHMARK_VERSION}.tar.gz \
   && tar -xvf geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz \
-  && rm geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz
+  && rm geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz && ls
 
 RUN wget -q -O $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz https://s3.us-east-2.amazonaws.com/geotiff-benchmark-sample-files/geotiff_sample_files.tar.gz \
   && cd $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/ \

@@ -147,14 +147,15 @@ def run():
             # Run the write benchmark
             cmd = "/usr/bin/python3 {} benchmark --file {} --test {} --option {} --config {}".format(os.path.abspath(__file__), name, 'write', section, args.config)
             try:
+                created_file = os.path.join(base_dir, 'test_rasters', name, section, section+'.tif')
                 print("Running benchmark ({}x): {}".format(args.repetitions, cmd))
                 task_clock = perf(cmd=cmd, rep=args.repetitions)
-                
                 # Check file size
-                created_file = os.path.join(base_dir, 'test_rasters', name, section, section+'.tif')
                 file_size = os.stat(created_file).st_size / (1024.0*1024.0)
                 print("Completed {} repetitions. Average time: {:.2f}s File size: {:.1f}Mb".format(args.repetitions, task_clock, file_size))
             except Exception as e:
+                try: os.remove(created_file)
+                except: pass
                 print("Failed to run benchmark: {}".format(e))
                 task_clock = ''
                 file_size = ''
