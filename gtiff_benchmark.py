@@ -21,6 +21,7 @@ def parse_files():
     Create an ordered dict from the .tif files in the input dir
     """
     files = OrderedDict()
+
     for path in glob.glob(os.path.join(args.input, "*.tif")):
         filename = os.path.basename(path)
         files.update({filename:path})
@@ -42,7 +43,7 @@ def prepare():
     raster without compression, tiling, etc.
     """
     files = parse_files()
-    
+
     # Process the input_rasters to test_rasters
     for name, path in files.items():
         try:
@@ -136,6 +137,7 @@ def run():
         sys.exit(1)
     
     #TODO: Use itertools.product to loop through everything in one loop, file/section/tests
+    #TODO: Remove duplicate code of running read/write benchmarks
     results = ['test;file;option;time;size']
     for name, path in files.items():
         for section in config.sections():
@@ -145,15 +147,15 @@ def run():
             # Run the write benchmark
             cmd = "/usr/bin/python3 {} benchmark --file {} --test {} --option {} --config {}".format(os.path.abspath(__file__), name, 'write', section, args.config)
             try:
-                print("Running benchmark ({}x): {}".format(rep, cmd))
+                print("Running benchmark ({}x): {}".format(args.repetitions, cmd))
                 task_clock = perf(cmd=cmd, rep=args.repetitions)
                 
                 # Check file size
                 created_file = os.path.join(base_dir, 'test_rasters', name, section, section+'.tif')
                 file_size = os.stat(created_file).st_size / (1024.0*1024.0)
-                print("Completed {} repetitions. Average time: {:.2f}s File size: {:.1f}Mb".format(rep, task_clock, file_size))
+                print("Completed {} repetitions. Average time: {:.2f}s File size: {:.1f}Mb".format(args.repetitions, task_clock, file_size))
             except Exception as e:
-                print("Failed to run benchmark.")
+                print("Failed to run benchmark: {}".format(e))
                 task_clock = ''
                 file_size = ''
             
@@ -163,21 +165,27 @@ def run():
             #Run the read benchmark
             cmd = "/usr/bin/python3 {} benchmark --file {} --test {} --option {} --config {}".format(os.path.abspath(__file__), name, 'read', section, args.config)
             try:
-                print("Running benchmark ({}x): {}".format(rep, cmd))
+                print("Running benchmark ({}x): {}".format(args.repetitions, cmd))
                 task_clock = perf(cmd=cmd, rep=args.repetitions)
-                print("Completed {} repetitions. Average time: {:.2f}s".format(rep, task_clock))
+                print("Completed {} repetitions. Average time: {:.2f}s".format(args.repetitions, task_clock))
             except Exception as e:
-                print("Failed to run benchmark.")
+                print("Failed to run benchmark: {}".format(e))
                 task_clock = ''
 
             # Append the result to the results list
             results.append('{};{};{};{};{}'.format('read', name, section, task_clock, ''))
 
             
-    # Write the results to the results file
+    # Write the results to the results file and to stdout
+    result_csv = '\n'.join(results)
     with open('results.csv', 'w') as f:
-        f.write('\n'.join(results)+'\n')
-            
+        f.write(result_csv)
+    print("===========================================================")
+    print("Benchmark complete! Results:")
+    print("-----------------------------------------------------------")
+    print(result_csv)
+    print("===========================================================")
+        
 def perf(cmd='sleep 1', rep=1):
     """
     Use python's subprocess module to run a command with 'perf stat' and 
@@ -227,7 +235,7 @@ if __name__ == '__main__':
                         default='config.ini')
     parser.add_argument('--repetitions', help='Number of reps', default=10)
     parser.add_argument('--input', help='Directory with input files',
-                        default=os.path.join(base_dir,'input_files'))
+                        default=os.path.join(base_dir,'input_rasters'))
 
     args = parser.parse_args()
     
