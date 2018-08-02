@@ -14,7 +14,12 @@ shell:
 		geotiff-benchmark /bin/bash
 
 benchmark:
-	#run the benchmark...
+	docker run \
+	    --name geotiff-benchmark \
+	    --privileged \
+	    --rm \
+	    --it \ 
+	    geotiff-benchmark /usr/bin/python3 /usr/local/geotiff-benchmark-master/geotiff_benchmark.py prepare && /usr/bin/python3 /usr/local/geotiff-benchmark-master/geotiff_benchmark.py run
 
 clean:
 	docker stop geotiff-benchmark

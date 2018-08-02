@@ -1,7 +1,8 @@
 *.pyc
-input_rasters/*
+input_rasters/*.tif
+input_rasters/*.xml
+input_rasters/*.tar.gz
 test_rasters/*
 *.csv
 *.ods
 *.ods#
-minimal.ini

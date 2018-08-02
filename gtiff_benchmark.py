@@ -1,5 +1,5 @@
 """
-gtiff_test.py - Test utility for benchmarking geotiff compression
+gtiff_benchmark.py - Test utility for benchmarking geotiff compression
 
 To do:
 - configurable results file via --results arg
@@ -18,10 +18,10 @@ from collections import OrderedDict
 
 def parse_files():
     """
-    Create an ordered dict from the .tif files in the input_rasters dir
+    Create an ordered dict from the .tif files in the input dir
     """
     files = OrderedDict()
-    for path in glob.glob(os.path.join(base_dir, "input_rasters", "*.tif")):
+    for path in glob.glob(os.path.join(args.input, "*.tif")):
         filename = os.path.basename(path)
         files.update({filename:path})
 
@@ -124,8 +124,7 @@ def run():
     files = parse_files()
     print("Loading config file '{}'".format(args.config))
     config = parse_config(config_file=args.config)
-    rep = args.repetitions
-    results = ['test;file;option;time;size']
+
     
     print("Testing that stat perf works...")
     try:
@@ -137,6 +136,7 @@ def run():
         sys.exit(1)
     
     #TODO: Use itertools.product to loop through everything in one loop, file/section/tests
+    results = ['test;file;option;time;size']
     for name, path in files.items():
         for section in config.sections():
             if section.lower() == 'default':
@@ -146,7 +146,7 @@ def run():
             cmd = "/usr/bin/python3 {} benchmark --file {} --test {} --option {} --config {}".format(os.path.abspath(__file__), name, 'write', section, args.config)
             try:
                 print("Running benchmark ({}x): {}".format(rep, cmd))
-                task_clock = perf(cmd=cmd, rep=rep)
+                task_clock = perf(cmd=cmd, rep=args.repetitions)
                 
                 # Check file size
                 created_file = os.path.join(base_dir, 'test_rasters', name, section, section+'.tif')
@@ -164,7 +164,7 @@ def run():
             cmd = "/usr/bin/python3 {} benchmark --file {} --test {} --option {} --config {}".format(os.path.abspath(__file__), name, 'read', section, args.config)
             try:
                 print("Running benchmark ({}x): {}".format(rep, cmd))
-                task_clock = perf(cmd=cmd, rep=rep)
+                task_clock = perf(cmd=cmd, rep=args.repetitions)
                 print("Completed {} repetitions. Average time: {:.2f}s".format(rep, task_clock))
             except Exception as e:
                 print("Failed to run benchmark.")
@@ -212,6 +212,8 @@ def perf(cmd='sleep 1', rep=1):
                         "from perf's stderr: {}".format(result.stderr))
 
 if __name__ == '__main__':
+    
+    base_dir = os.path.split(os.path.abspath(__file__))[0]
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="GTiff Benchmark")
@@ -224,12 +226,14 @@ if __name__ == '__main__':
     parser.add_argument('--config', help='Config file to use', 
                         default='config.ini')
     parser.add_argument('--repetitions', help='Number of reps', default=10)
+    parser.add_argument('--input', help='Directory with input files',
+                        default=os.path.join(base_dir,'input_files'))
 
     args = parser.parse_args()
     
     # Setup and config
     drv = gdal.GetDriverByName('GTiff')
-    base_dir = os.path.split(os.path.abspath(__file__))[0]
+    
     config = parse_config(config_file=args.config)
     
     if args.action == 'benchmark':

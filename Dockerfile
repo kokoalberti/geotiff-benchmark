@@ -108,4 +108,8 @@ ENV GTIFF_BENCHMARK_VERSION master
 
 ADD https://github.com/kokoalberti/geotiff-benchmark/archive/${GTIFF_BENCHMARK_VERSION}.tar.gz $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz
 
-RUN tar -xvf geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz
+RUN tar -xvf geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz 
+
+ADD https://s3.us-east-2.amazonaws.com/geotiff-benchmark-sample-files/geotiff_sample_files.tar.gz $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz
+
+RUN tar -xvf $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz
