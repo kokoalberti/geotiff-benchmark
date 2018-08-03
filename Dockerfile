@@ -8,7 +8,7 @@
 FROM ubuntu:xenial
 
 ENV ROOTDIR /usr/local/
-ENV GDAL_VERSION 2.3.1
+ENV GDAL_VERSION master
 ENV ZSTD_VERSION 1.3.5
 
 # Load assets
@@ -45,10 +45,10 @@ RUN wget -q -O $ROOTDIR/src/zstd-${ZSTD_VERSION}.tar.gz https://github.com/faceb
     && cd $ROOTDIR && rm -Rf src/zstd*
 
 # Download, compile and install minimal GDAL
-RUN wget -q -O $ROOTDIR/src/gdal-${GDAL_VERSION}.tar.gz http://download.osgeo.org/gdal/${GDAL_VERSION}/gdal-${GDAL_VERSION}.tar.gz \
+RUN wget -q -O $ROOTDIR/src/gdal-${GDAL_VERSION}.tar.gz https://github.com/OSGeo/gdal/archive/${GDAL_VERSION}.tar.gz \
     && cd src \
     && tar -xvf gdal-${GDAL_VERSION}.tar.gz \
-    && cd gdal-${GDAL_VERSION} \
+    && cd gdal-${GDAL_VERSION}/gdal \
     && ./configure \
       --with-python \
       --with-zstd=$ROOTDIR \
@@ -102,17 +102,17 @@ RUN wget -q -O $ROOTDIR/src/gdal-${GDAL_VERSION}.tar.gz http://download.osgeo.or
       --without-xml2 \
     && make && make install && ldconfig \
     && apt-get update -y \
-    && cd $ROOTDIR && cd src/gdal-${GDAL_VERSION}/swig/python \
+    && cd $ROOTDIR && cd src/gdal-${GDAL_VERSION}/gdal/swig/python \
     && python3 setup.py build \
     && python3 setup.py install \
     && cd $ROOTDIR && rm -Rf src/gdal*
 
 # Set up the benchmark script and sample files
-ENV GTIFF_BENCHMARK_VERSION master
+ENV GTIFF_BENCHMARK_VERSION gdal-master
 
 RUN wget -q -O $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz https://github.com/kokoalberti/geotiff-benchmark/archive/${GTIFF_BENCHMARK_VERSION}.tar.gz \
   && tar -xvf geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz \
-  && rm geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz && ls
+  && rm geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz
 
 RUN wget -q -O $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz https://s3.us-east-2.amazonaws.com/geotiff-benchmark-sample-files/geotiff_sample_files.tar.gz \
   && cd $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/ \
