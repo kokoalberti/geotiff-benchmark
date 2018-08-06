@@ -93,7 +93,7 @@ if __name__ == '__main__':
             
             # Create the base version of the input file.
             base_file = os.path.join(tmpdir, 'base.tif')
-            cmd = ['gdal_translate', '-q', path, base_file, '-co', 'TILED=YES', 
+            cmd = ['gdal_translate', '-q', path, base_file, '-co', 'TILED=NO', 
                    '-co', 'COMPRESS=NONE', '-co', 'COPY_SRC_OVERVIEWS=NO']
             subprocess.run(cmd)
             base_file_size = os.stat(base_file).st_size / (1024.0*1024.0)
@@ -129,7 +129,7 @@ if __name__ == '__main__':
                 print("READ test: Running on file '{}'".format(option+'.tif'))
                 read_file_output = os.path.join(tmpdir, 'read.tif')
                 cmd = ['gdal_translate', '-q', option_file, read_file_output, 
-                       '-co', 'TILED=YES', '-co', 'COMPRESS=NONE']
+                       '-co', 'TILED=NO', '-co', 'COMPRESS=NONE']
                        
                 try:
                     task_clock = perf(cmd=cmd, rep=args.repetitions)
