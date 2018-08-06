@@ -19,7 +19,7 @@ test:
 	    --privileged \
 	    --rm \
 	    -it \
-	    geotiff-benchmark /bin/bash -c "/usr/bin/python3 /usr/local/geotiff-benchmark-master/gtiff_benchmark.py --config /usr/local/geotiff-benchmark-master/config.ini --repetitions 1"
+	    geotiff-benchmark /bin/bash -c "/usr/bin/python3 /usr/local/geotiff-benchmark-master/gtiff_benchmark.py --config /usr/local/geotiff-benchmark-master/config-minimal.ini --repetitions 1"
 
 benchmark:
 	docker run \
