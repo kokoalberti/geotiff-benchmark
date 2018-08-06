@@ -110,11 +110,13 @@ RUN wget -q -O $ROOTDIR/src/gdal-${GDAL_VERSION}.tar.gz https://github.com/OSGeo
 # Set up the benchmark script and sample files
 ENV GTIFF_BENCHMARK_VERSION master
 
-RUN wget -q -O $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz https://github.com/kokoalberti/geotiff-benchmark/archive/${GTIFF_BENCHMARK_VERSION}.tar.gz \
-  && tar -xvf geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz \
+ADD https://github.com/kokoalberti/geotiff-benchmark/archive/${GTIFF_BENCHMARK_VERSION}.tar.gz $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz
+
+RUN tar -xvf geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz \
   && rm geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz
 
-RUN wget -q -O $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz https://s3.us-east-2.amazonaws.com/geotiff-benchmark-sample-files/geotiff_sample_files.tar.gz \
-  && cd $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/ \
+ADD https://s3.us-east-2.amazonaws.com/geotiff-benchmark-sample-files/geotiff_sample_files.tar.gz $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz
+
+RUN cd $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/ \
   && tar -xvf $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz \
   && rm $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}/input_rasters/geotiff_sample_files.tar.gz
