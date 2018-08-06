@@ -83,7 +83,7 @@ if __name__ == '__main__':
     config = parse_config(config_file=args.config)
     
     # Let's run some tests!
-    results = ['test;file;option;time;size']
+    results = ['test;file;option;time;size;ratio;speed']
     for path in glob.glob(os.path.join(args.input, "*.tif")):
         
         filename = os.path.basename(path)
@@ -96,6 +96,7 @@ if __name__ == '__main__':
             cmd = ['gdal_translate', '-q', path, base_file, '-co', 'TILED=YES', 
                    '-co', 'COMPRESS=NONE', '-co', 'COPY_SRC_OVERVIEWS=NO']
             subprocess.run(cmd)
+            base_file_size = os.stat(base_file).st_size / (1024.0*1024.0)
             
             # Run the tests...
             for option in config.keys():
@@ -109,15 +110,19 @@ if __name__ == '__main__':
                 try:
                     task_clock = perf(cmd=cmd, rep=args.repetitions)
                     file_size = os.stat(option_file).st_size / (1024.0*1024.0)
-                    print("WRITE test: Completed {} repetitions. Average time: {:.2f}s File size: {:.1f}Mb".format(args.repetitions, task_clock, file_size))
+                    compression_ratio = file_size / base_file_size
+                    speed = (1/task_clock) * base_file_size
+                    print("WRITE test: Completed {} repetitions. Average time: {:.2f}s File size: {:.1f}Mb Ratio: {:.2f} Speed: {:.2f}Mb/s".format(args.repetitions, task_clock, file_size, compression_ratio, speed))
                 except Exception as e:
                     try: os.remove(option_file)
                     except: pass
                     print("WRITE test: Failed!")
                     task_clock = ''
                     file_size = ''
+                    compression_ratio = ''
+                    speed = ''
                 finally:
-                    results.append('{};{};{};{};{}'.format('write', filename, option, task_clock, file_size))
+                    results.append('{};{};{};{};{};{};{}'.format('write', filename, option, task_clock, file_size, compression_ratio, speed))
                     
                 # Run the read tests on the just created file by decompressing
                 # it again.
@@ -128,12 +133,14 @@ if __name__ == '__main__':
                        
                 try:
                     task_clock = perf(cmd=cmd, rep=args.repetitions)
-                    print("READ test: Completed {} repetitions. Average time: {:.2f}s".format(args.repetitions, task_clock))
+                    speed = (1/task_clock) * base_file_size
+                    print("READ test: Completed {} repetitions. Average time: {:.2f}s Speed: {:.2f}Mb/s".format(args.repetitions, task_clock, speed))
                 except Exception as e:
                     print("READ test: Failed!")
                     task_clock = ''
+                    speed = ''
                 finally:
-                    results.append('{};{};{};{};{}'.format('read', filename, option, task_clock, ''))
+                    results.append('{};{};{};{};{};{};{}'.format('read', filename, option, task_clock, '', '', speed))
                     
     # Write the results to the results file and to stdout
     result_csv = '\n'.join(results)
