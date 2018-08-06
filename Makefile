@@ -2,25 +2,33 @@
 SHELL = /bin/bash
 
 build:
-	docker build -f Dockerfile --tag geotiff-benchmark-master .
+	docker build -f Dockerfile --tag geotiff-benchmark .
 
 shell:
 	docker run \
-		--name geotiff-benchmark-master \
+		--name geotiff-benchmark \
 		--privileged \
 		--volume $(shell pwd)/:/data \
 		--rm \
 		-it \
-		geotiff-benchmark-master /bin/bash
+		geotiff-benchmark /bin/bash
 
-benchmark:
+test:
 	docker run \
-	    --name geotiff-benchmark-master \
+	    --name geotiff-benchmark \
 	    --privileged \
 	    --rm \
 	    -it \
-	    geotiff-benchmark-master /bin/bash -c "/usr/bin/python3 /usr/local/geotiff-benchmark-gdal-master/gtiff_benchmark.py prepare && /usr/bin/python3 /usr/local/geotiff-benchmark-gdal-master/gtiff_benchmark.py run --config /usr/local/geotiff-benchmark-gdal-master/config.ini"
+	    geotiff-benchmark /bin/bash -c "/usr/bin/python3 /usr/local/geotiff-benchmark-master/gtiff_benchmark.py --config /usr/local/geotiff-benchmark-master/config.ini --repetitions 1"
+
+benchmark:
+	docker run \
+	    --name geotiff-benchmark \
+	    --privileged \
+	    --rm \
+	    -it \
+	    geotiff-benchmark /bin/bash -c "/usr/bin/python3 /usr/local/geotiff-benchmark-master/gtiff_benchmark.py --config /usr/local/geotiff-benchmark-master/config.ini --repetitions 10"
 
 clean:
-	docker stop geotiff-benchmark-master
-	docker rm geotiff-benchmark-master
+	docker stop geotiff-benchmark
+	docker rm geotiff-benchmark

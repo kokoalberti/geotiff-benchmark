@@ -108,7 +108,7 @@ RUN wget -q -O $ROOTDIR/src/gdal-${GDAL_VERSION}.tar.gz https://github.com/OSGeo
     && cd $ROOTDIR && rm -Rf src/gdal*
 
 # Set up the benchmark script and sample files
-ENV GTIFF_BENCHMARK_VERSION gdal-master
+ENV GTIFF_BENCHMARK_VERSION master
 
 RUN wget -q -O $ROOTDIR/geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz https://github.com/kokoalberti/geotiff-benchmark/archive/${GTIFF_BENCHMARK_VERSION}.tar.gz \
   && tar -xvf geotiff-benchmark-${GTIFF_BENCHMARK_VERSION}.tar.gz \
