@@ -29,6 +29,15 @@ benchmark:
 	    -it \
 	    geotiff-benchmark /bin/bash -c "/usr/bin/python3 /usr/local/geotiff-benchmark-master/gtiff_benchmark.py --config /usr/local/geotiff-benchmark-master/config.ini --repetitions 10"
 
+lerc:
+	docker run \
+	    --name geotiff-benchmark \
+	    --privileged \
+	    --rm \
+	    -it \
+	    geotiff-benchmark /bin/bash -c "/usr/bin/python3 /usr/local/geotiff-benchmark-master/gtiff_benchmark.py --config /usr/local/geotiff-benchmark-master/config-lerc.ini --repetitions 1"
+
+
 clean:
 	docker stop geotiff-benchmark
 	docker rm geotiff-benchmark
