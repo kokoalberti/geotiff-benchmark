@@ -83,7 +83,7 @@ if __name__ == '__main__':
     config = parse_config(config_file=args.config)
     
     # Let's run some tests!
-    results = ['test;file;option;time;size;ratio;speed']
+    results = ['test;file;option;time;size;ratio;savings;speed']
     for path in glob.glob(os.path.join(args.input, "*.tif")):
         
         filename = os.path.basename(path)
@@ -110,7 +110,8 @@ if __name__ == '__main__':
                 try:
                     task_clock = perf(cmd=cmd, rep=args.repetitions)
                     file_size = os.stat(option_file).st_size / (1024.0*1024.0)
-                    compression_ratio = file_size / base_file_size
+                    compression_ratio = base_file_size / file_size
+                    savings = 1 - (file_size / base_file_size)
                     speed = (1/task_clock) * base_file_size
                     print("WRITE test: Completed {} repetitions. Average time: {:.2f}s File size: {:.1f}Mb Ratio: {:.2f} Speed: {:.2f}Mb/s".format(args.repetitions, task_clock, file_size, compression_ratio, speed))
                 except Exception as e:
@@ -119,10 +120,11 @@ if __name__ == '__main__':
                     print("WRITE test: Failed!")
                     task_clock = ''
                     file_size = ''
+                    savings = ''
                     compression_ratio = ''
                     speed = ''
                 finally:
-                    results.append('{};{};{};{};{};{};{}'.format('write', filename, option, task_clock, file_size, compression_ratio, speed))
+                    results.append('{};{};{};{};{};{};{};{}'.format('write', filename, option, task_clock, file_size, compression_ratio, savings, speed))
                     
                 # Run the read tests on the just created file by decompressing
                 # it again.
@@ -140,7 +142,7 @@ if __name__ == '__main__':
                     task_clock = ''
                     speed = ''
                 finally:
-                    results.append('{};{};{};{};{};{};{}'.format('read', filename, option, task_clock, '', '', speed))
+                    results.append('{};{};{};{};;;;{}'.format('read', filename, option, task_clock, speed))
                     
     # Write the results to the results file and to stdout
     result_csv = '\n'.join(results)
